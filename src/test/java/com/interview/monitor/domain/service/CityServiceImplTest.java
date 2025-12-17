@@ -40,6 +40,6 @@ class CityServiceImplTest {
 
         // then
         verify(cityInformationClient).fetchFullCityInformation();
-        verify(cityRepository).saveAll(cities);
+        verify(cityRepository).upsertAll(cities);
     }
 }

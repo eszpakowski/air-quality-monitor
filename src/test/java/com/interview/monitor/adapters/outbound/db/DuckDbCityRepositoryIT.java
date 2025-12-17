@@ -33,7 +33,7 @@ class DuckDbCityRepositoryIT {
         Integer countBefore = countCities();
 
         // when
-        underTest.saveAll(cities);
+        underTest.upsertAll(cities);
 
         // then
         Integer countAfter = countCities();
@@ -47,11 +47,11 @@ class DuckDbCityRepositoryIT {
         var regionId = UUID.randomUUID();
 
         City cityBefore = new City(id, "City", "Country", "Region", regionId);
-        underTest.saveAll(List.of(cityBefore));
+        underTest.upsertAll(List.of(cityBefore));
 
         // when
         City cityUpdated = new City(id, "City", "Country", "RegionChanged", regionId);
-        underTest.saveAll(List.of(cityUpdated));
+        underTest.upsertAll(List.of(cityUpdated));
 
         // then
         String actual = selectCityRegion(id);

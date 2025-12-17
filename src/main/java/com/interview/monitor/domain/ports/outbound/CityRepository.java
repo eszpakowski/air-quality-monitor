@@ -5,5 +5,5 @@ import com.interview.monitor.domain.model.City;
 import java.util.List;
 
 public interface CityRepository {
-    void saveAll(List<City> cities);
+    void upsertAll(List<City> cities);
 }

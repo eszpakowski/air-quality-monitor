@@ -18,6 +18,6 @@ public class CityServiceImpl implements CityService {
     @Override
     public void refreshCityInformation() {
         List<City> cities = cityInformationClient.fetchFullCityInformation();
-        cityRepository.saveAll(cities);
+        cityRepository.upsertAll(cities);
     }
 }

@@ -31,7 +31,7 @@ public class DuckDbCityRepository implements CityRepository {
     }
 
     @Override
-    public void saveAll(List<City> cities) {
+    public void upsertAll(List<City> cities) {
         try (var conn = (DuckDBConnection) DriverManager.getConnection(datasourceUrl);
              PreparedStatement stmt = conn.prepareStatement(UPSERT_CITY_SQL)) {
             for (City city : cities) {
