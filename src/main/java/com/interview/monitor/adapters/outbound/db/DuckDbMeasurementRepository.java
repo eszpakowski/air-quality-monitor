@@ -1,5 +1,6 @@
 package com.interview.monitor.adapters.outbound.db;
 
+import com.interview.monitor.domain.exception.DatastoreException;
 import com.interview.monitor.domain.model.Measurement;
 import com.interview.monitor.domain.ports.outbound.MeasurementRepository;
 import org.duckdb.DuckDBConnection;
@@ -37,7 +38,7 @@ public class DuckDbMeasurementRepository implements MeasurementRepository {
 
             stmt.execute();
         } catch (SQLException ex) {
-            throw new RuntimeException("Problems occurred when acquiring connection", ex);
+            throw new DatastoreException("Problems occurred when acquiring connection", ex);
         }
     }
 }

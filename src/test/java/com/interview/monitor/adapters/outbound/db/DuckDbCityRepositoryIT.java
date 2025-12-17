@@ -40,7 +40,30 @@ class DuckDbCityRepositoryIT {
         assertEquals(countBefore + 3, countAfter);
     }
 
+    @Test
+    void shouldUpdateExistingEntity() {
+        // given
+        var id = UUID.randomUUID();
+        var regionId = UUID.randomUUID();
+
+        City cityBefore = new City(id, "City", "Country", "Region", regionId);
+        underTest.saveAll(List.of(cityBefore));
+
+        // when
+        City cityUpdated = new City(id, "City", "Country", "RegionChanged", regionId);
+        underTest.saveAll(List.of(cityUpdated));
+
+        // then
+        String actual = selectCityRegion(id);
+        assertEquals("RegionChanged", actual);
+    }
+
     private Integer countCities() {
         return jdbcTemplate.queryForObject("SELECT count(*) from cities", Integer.class);
     }
+
+    private String selectCityRegion(UUID id) {
+        return jdbcTemplate.queryForObject("SELECT region from cities WHERE id = ?", String.class, id);
+    }
+
 }
