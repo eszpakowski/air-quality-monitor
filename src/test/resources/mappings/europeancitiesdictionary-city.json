@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/cities/.*"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "country": "Poland",
+      "city": "Ruda Śląska",
+      "cityId": "6c156b99-71ab-4639-b814-b6e43f6e2dc1",
+      "region": "Śląskie",
+      "regionId": "14daafa4-2272-4f54-9000-f3125ddb8e2e"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

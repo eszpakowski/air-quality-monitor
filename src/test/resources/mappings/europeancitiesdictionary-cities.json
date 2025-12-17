@@ -1,0 +1,45 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/cities"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "lastUpdate": "2025-02-27T08:23:44",
+      "cities": [
+        {
+          "country": "Poland",
+          "city": "Cieszyn",
+          "cityId": "a5e32ed6-e4f9-4a9e-abc5-e380d58f2f90",
+          "region": "Śląskie",
+          "regionId": "599fa14c-8deb-4832-9e48-3088687448d0"
+        },
+        {
+          "country": "Poland",
+          "city": "Kraków",
+          "cityId": "41959f8d-69f0-4746-b586-a8a0ab8c3ed8",
+          "region": "Małopolskie",
+          "regionId": "bdf77472-dda7-4578-b097-14fbeea6b70e"
+        },
+        {
+          "country": "Poland",
+          "city": "Ruda Śląska",
+          "cityId": "6c156b99-71ab-4639-b814-b6e43f6e2dc1",
+          "region": "Śląskie",
+          "regionId": "14daafa4-2272-4f54-9000-f3125ddb8e2e"
+        },
+        {
+          "country": "Poland",
+          "city": "Warszawa",
+          "cityId": "b8095440-dd44-462c-bf2f-cee496b60b0f",
+          "region": "Mazowieckie",
+          "regionId": "77f875e1-d282-424f-bb12-21ddcba412cd"
+        }
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

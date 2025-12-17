@@ -1,15 +1,15 @@
 package com.interview.monitor.adapters.inbound.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.interview.monitor.adapters.inbound.rest.dto.MeasurementRequestDTO;
 import com.interview.monitor.domain.model.Measurement;
 import com.interview.monitor.domain.ports.inbound.MeasurementService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -32,13 +32,13 @@ class MeasurementControllerTest {
     private static final long TIMESTAMP = 1742332376L;
 
     @MockitoBean
-    private MeasurementService measurementService;
+    MeasurementService measurementService;
 
     @Autowired
-    private MockMvc mockMvc;
+    MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    ObjectMapper objectMapper;
 
     @Test
     void shouldReturnClientError_whenIncorrectContentType() throws Exception {
