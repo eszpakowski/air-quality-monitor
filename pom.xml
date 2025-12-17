@@ -148,6 +148,7 @@
                         <id>integration-test-database-setup</id>
                         <phase>pre-integration-test</phase>
                         <goals>
+                            <goal>clean</goal>
                             <goal>migrate</goal>
                         </goals>
                         <configuration>
@@ -155,16 +156,6 @@
                             <locations>
                                 <location>classpath:db/migration</location>
                             </locations>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>integration-test-database-cleanup</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                        <configuration>
-                            <url>jdbc:duckdb:src/test/resources/test-db.duckdb</url>
                             <cleanDisabled>false</cleanDisabled>
                         </configuration>
                     </execution>
