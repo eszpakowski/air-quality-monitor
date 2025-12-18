@@ -17,4 +17,6 @@ public interface MeasurementRepository {
     List<String> queryRisingPM105MCities(UUID regionId);
 
     Optional<CityStatsResponseDTO> queryCityStatsLastHour(UUID cityId);
+
+    void generateMonthlyHighestPM10Report(String filename);
 }

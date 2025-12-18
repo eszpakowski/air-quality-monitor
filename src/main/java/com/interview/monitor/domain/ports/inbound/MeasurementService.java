@@ -13,4 +13,6 @@ public interface MeasurementService {
     RisingCityStatsResponseDTO calculateRisingCityStats(UUID regionId);
 
     Optional<CityStatsResponseDTO> calculateCityStatsLastHour(UUID cityId);
+
+    void generateMonthlyHighestPM10Report();
 }

@@ -65,6 +65,23 @@ public class DuckDbMeasurementRepository implements MeasurementRepository {
             WHERE m.city_id = ?
               AND m.timestamp >= NOW() - INTERVAL '1 hour';
             """;
+    private static final String GENERATE_MONTHLY_HIGHEST_PM10_REPORT = """
+            COPY (
+                SELECT
+                    c.name AS CITY,
+                    c.region AS REGION,
+                    ROUND(AVG(m.pm10), 2) AS PM10
+                FROM measurements m
+                JOIN cities c ON m.city_id = c.id
+                WHERE m.timestamp >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '1 month'
+                  AND m.timestamp < DATE_TRUNC('month', CURRENT_DATE)
+                GROUP BY ALL
+                HAVING COUNT(DISTINCT m.timestamp::DATE) = day(last_day(CURRENT_DATE - INTERVAL '1 month'))
+                ORDER BY PM10 DESC
+                LIMIT 10
+            ) TO '%s' (HEADER);
+            """;
+
 
     private final String datasourceUrl;
 
@@ -74,7 +91,7 @@ public class DuckDbMeasurementRepository implements MeasurementRepository {
 
     @Override
     public void save(Measurement measurement) {
-        try (var conn = (DuckDBConnection) DriverManager.getConnection(datasourceUrl);
+        try (var conn = getDuckDBConnection();
              PreparedStatement stmt = conn.prepareStatement(INSERT_MEASUREMENT_SQL)) {
             stmt.setObject(1, measurement.sensorId());
             stmt.setObject(2, measurement.cityId());
@@ -85,13 +102,13 @@ public class DuckDbMeasurementRepository implements MeasurementRepository {
 
             stmt.execute();
         } catch (SQLException ex) {
-            throw new DatastoreException("Problems occurred when acquiring connection", ex);
+            throw new DatastoreException("Problems occurred when accessing database", ex);
         }
     }
 
     @Override
     public void saveAll(List<Measurement> measurements) {
-        try (var conn = (DuckDBConnection) DriverManager.getConnection(datasourceUrl);
+        try (var conn = getDuckDBConnection();
              PreparedStatement stmt = conn.prepareStatement(INSERT_MEASUREMENT_SQL)) {
             for (Measurement measurement : measurements) {
                 stmt.setObject(1, measurement.sensorId());
@@ -122,7 +139,7 @@ public class DuckDbMeasurementRepository implements MeasurementRepository {
 
     @Override
     public Optional<CityStatsResponseDTO> queryCityStatsLastHour(UUID cityId) {
-        try (var conn = (DuckDBConnection) DriverManager.getConnection(datasourceUrl);
+        try (var conn = getDuckDBConnection();
              PreparedStatement stmt = conn.prepareStatement(CITY_STATS_LAST_HOUR_SQL)) {
             stmt.setObject(1, cityId);
 
@@ -149,13 +166,19 @@ public class DuckDbMeasurementRepository implements MeasurementRepository {
         }
     }
 
-    private static boolean containsValues(ResultSet resultSet) throws SQLException {
-        return getBigDecimal(resultSet, "avg_no2") != null;
+    @Override
+    public void generateMonthlyHighestPM10Report(String filename) {
+        try (var conn = getDuckDBConnection();
+             PreparedStatement stmt = conn.prepareStatement(GENERATE_MONTHLY_HIGHEST_PM10_REPORT.formatted(filename))) {
+            stmt.execute();
+        } catch (SQLException ex) {
+            throw new DatastoreException("Problems occurred when accessing database", ex);
+        }
     }
 
     private ArrayList<String> queryRisingCities(String sql, UUID regionId) {
         var results = new ArrayList<String>();
-        try (var conn = (DuckDBConnection) DriverManager.getConnection(datasourceUrl);
+        try (var conn = getDuckDBConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setObject(1, regionId);
 
@@ -169,8 +192,17 @@ public class DuckDbMeasurementRepository implements MeasurementRepository {
         }
     }
 
+    private static boolean containsValues(ResultSet resultSet) throws SQLException {
+        // We check any of the values to decide if the query returned results
+        return getBigDecimal(resultSet, "avg_no2") != null;
+    }
+
     private static BigDecimal getBigDecimal(ResultSet rs, String columnName) throws SQLException {
         String value = rs.getString(columnName);
         return rs.wasNull() ? null : new BigDecimal(value);
+    }
+
+    private DuckDBConnection getDuckDBConnection() throws SQLException {
+        return (DuckDBConnection) DriverManager.getConnection(datasourceUrl);
     }
 }

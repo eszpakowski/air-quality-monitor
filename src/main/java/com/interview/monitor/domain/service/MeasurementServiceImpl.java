@@ -6,18 +6,29 @@ import com.interview.monitor.adapters.inbound.rest.dto.RisingCityStatsResponseDT
 import com.interview.monitor.domain.model.Measurement;
 import com.interview.monitor.domain.ports.inbound.MeasurementService;
 import com.interview.monitor.domain.ports.outbound.MeasurementRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class MeasurementServiceImpl implements MeasurementService {
+    private static final String FILE_PREFIX = "WORST_CITIES_PM10_";
+    private static final DateTimeFormatter FILE_NAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM");
+
+    private final String reportLocation;
     private final MeasurementRepository measurementRepository;
+
+    public MeasurementServiceImpl(@Value("${reports.monthly.highest-pm10.location}") String reportLocation,
+                                  MeasurementRepository measurementRepository) {
+        this.reportLocation = reportLocation;
+        this.measurementRepository = measurementRepository;
+    }
 
     @Override
     @Transactional
@@ -35,5 +46,11 @@ public class MeasurementServiceImpl implements MeasurementService {
     @Override
     public Optional<CityStatsResponseDTO> calculateCityStatsLastHour(UUID cityId) {
         return measurementRepository.queryCityStatsLastHour(cityId);
+    }
+
+    @Override
+    public void generateMonthlyHighestPM10Report() {
+        String fileName = FILE_PREFIX + LocalDate.now().minusMonths(1).format(FILE_NAME_FORMATTER) + ".csv";
+        measurementRepository.generateMonthlyHighestPM10Report(reportLocation + fileName);
     }
 }

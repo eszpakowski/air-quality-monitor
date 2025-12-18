@@ -4,15 +4,17 @@ import com.interview.monitor.adapters.inbound.rest.dto.CityStatsResponseDTO;
 import com.interview.monitor.adapters.inbound.rest.dto.RisingCityStatsResponseDTO;
 import com.interview.monitor.domain.model.Measurement;
 import com.interview.monitor.domain.ports.outbound.MeasurementRepository;
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,11 +28,19 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class MeasurementServiceImplTest {
+    private static final String REPORTS_DIR = "/reports/";
+    private static final String FILE_PREFIX = "WORST_CITIES_PM10_";
+    private static final DateTimeFormatter FILE_NAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM");
+
     @Mock
     MeasurementRepository measurementRepository;
 
-    @InjectMocks
     MeasurementServiceImpl underTest;
+
+    @BeforeEach
+    void setUp() {
+        underTest = new MeasurementServiceImpl(REPORTS_DIR, measurementRepository);
+    }
 
     @Test
     void save_shouldCallMeasurementRepository() {
@@ -79,6 +89,18 @@ class MeasurementServiceImplTest {
 
         // then
         assertThat(actual).hasValue(cityStats);
+    }
+
+    @Test
+    void generateMonthlyHighestPM10Report_shouldCallRepository() {
+        // given
+        String expectedFileName = FILE_PREFIX + LocalDate.now().minusMonths(1).format(FILE_NAME_FORMATTER) + ".csv";
+
+        // when
+        underTest.generateMonthlyHighestPM10Report();
+
+        // then
+        verify(measurementRepository).generateMonthlyHighestPM10Report(REPORTS_DIR + expectedFileName);
     }
 
     private static Measurement createValidMeasurement() {

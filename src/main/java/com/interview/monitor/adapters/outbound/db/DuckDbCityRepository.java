@@ -32,7 +32,7 @@ public class DuckDbCityRepository implements CityRepository {
 
     @Override
     public void upsertAll(List<City> cities) {
-        try (var conn = (DuckDBConnection) DriverManager.getConnection(datasourceUrl);
+        try (var conn = getDuckDBConnection();
              PreparedStatement stmt = conn.prepareStatement(UPSERT_CITY_SQL)) {
             for (City city : cities) {
                 stmt.setObject(1, city.id());
@@ -47,5 +47,9 @@ public class DuckDbCityRepository implements CityRepository {
         } catch (SQLException ex) {
             throw new DatastoreException("Problems occurred when  accessing database", ex);
         }
+    }
+
+    private DuckDBConnection getDuckDBConnection() throws SQLException {
+        return (DuckDBConnection) DriverManager.getConnection(datasourceUrl);
     }
 }
