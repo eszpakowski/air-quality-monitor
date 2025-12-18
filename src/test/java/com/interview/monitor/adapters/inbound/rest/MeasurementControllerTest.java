@@ -31,8 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class MeasurementControllerTest {
     private static final String API = "/api";
     private static final String SAVE_MEASURE = API + "/save-measure";
-    private static final String GET_RISING_CITY_STATS = API + "/5M/{regionId}";
-    private static final String GET_CITY_STATS_LAST_HOUR = API + "/1H/city/{cityId}";
+    private static final String GET_RISING_CITY_STATS = API + "/stats/5M/{regionId}";
+    private static final String GET_CITY_STATS_LAST_HOUR = API + "/stats/1H/city/{cityId}";
     private static final String GET_WORST_NO2_CITIES_YEAR2YEAR = API + "/report/worst-cities-no2-y2y";
     private static final String CONTENT_TYPE = "Content-type";
 

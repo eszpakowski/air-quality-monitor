@@ -29,4 +29,5 @@ CREATE TABLE IF NOT EXISTS measurements (
     timestamp TIMESTAMP NOT NULL
 );
 CREATE SEQUENCE measurements_seq START 1;
+CREATE INDEX measurements_timestamp_idx ON measurements(timestamp);
 CREATE INDEX measurements_city_id_timestamp_idx ON measurements(city_id, timestamp);

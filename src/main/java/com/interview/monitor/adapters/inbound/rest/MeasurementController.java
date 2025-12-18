@@ -42,14 +42,14 @@ public class MeasurementController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/5M/{regionId}")
+    @GetMapping("/stats/5M/{regionId}")
     public ResponseEntity<RisingCityStatsResponseDTO> getRisingCityStats(@NotNull @PathVariable UUID regionId) {
         log.info("Request received for getRisingCityStats [regionId=%s]".formatted(regionId));
         RisingCityStatsResponseDTO response = measurementService.calculateRisingCityStats(regionId);
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("/1H/city/{cityId}")
+    @GetMapping("/stats/1H/city/{cityId}")
     public ResponseEntity<CityStatsResponseDTO> getCityStatsLastHour(@NotNull @PathVariable UUID cityId) {
         log.info("Request received for getCityStatsLastHour [cityId=%s]".formatted(cityId));
         return measurementService.calculateCityStatsLastHour(cityId)
