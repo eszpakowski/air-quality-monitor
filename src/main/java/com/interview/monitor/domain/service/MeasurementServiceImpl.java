@@ -38,6 +38,7 @@ public class MeasurementServiceImpl implements MeasurementService {
     }
 
     @Override
+    @Transactional
     public RisingCityStatsResponseDTO calculateRisingCityStats(UUID regionId) {
         List<String> risingCO5MCities = measurementRepository.queryRisingCO5MCities(regionId);
         List<String> risingPM105MCities = measurementRepository.queryRisingPM105MCities(regionId);
@@ -45,17 +46,20 @@ public class MeasurementServiceImpl implements MeasurementService {
     }
 
     @Override
+    @Transactional
     public Optional<CityStatsResponseDTO> calculateCityStatsLastHour(UUID cityId) {
         return measurementRepository.queryCityStatsLastHour(cityId);
     }
 
     @Override
+    @Transactional
     public void generateMonthlyHighestPM10Report() {
         String fileName = FILE_PREFIX + LocalDate.now().minusMonths(1).format(FILE_NAME_FORMATTER) + ".csv";
         measurementRepository.generateMonthlyHighestPM10Report(reportLocation + fileName);
     }
 
     @Override
+    @Transactional
     public List<CityNo2YearToYearResponseDTO> getWorstNo2CitiesYearToYear() {
         return measurementRepository.queryWorstNo2CitiesYearToYear();
     }

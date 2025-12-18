@@ -6,6 +6,7 @@ import com.interview.monitor.domain.ports.outbound.CityInformationClient;
 import com.interview.monitor.domain.ports.outbound.CityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class CityServiceImpl implements CityService {
     private final CityRepository cityRepository;
 
     @Override
+    @Transactional
     public void refreshCityInformation() {
         List<City> cities = cityInformationClient.fetchFullCityInformation();
         cityRepository.upsertAll(cities);
