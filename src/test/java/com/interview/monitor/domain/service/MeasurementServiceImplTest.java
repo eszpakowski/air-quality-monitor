@@ -4,7 +4,6 @@ import com.interview.monitor.adapters.inbound.rest.dto.CityStatsResponseDTO;
 import com.interview.monitor.adapters.inbound.rest.dto.RisingCityStatsResponseDTO;
 import com.interview.monitor.domain.model.Measurement;
 import com.interview.monitor.domain.ports.outbound.MeasurementRepository;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -101,6 +100,13 @@ class MeasurementServiceImplTest {
 
         // then
         verify(measurementRepository).generateMonthlyHighestPM10Report(REPORTS_DIR + expectedFileName);
+    }
+
+    @Test
+    void getWorstNo2CitiesYearToYear_shouldCallRepository() {
+        underTest.getWorstNo2CitiesYearToYear();
+
+        verify(measurementRepository).queryWorstNo2CitiesYearToYear();
     }
 
     private static Measurement createValidMeasurement() {

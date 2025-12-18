@@ -1,5 +1,6 @@
 package com.interview.monitor.adapters.outbound.db;
 
+import com.interview.monitor.adapters.inbound.rest.dto.CityNo2YearToYearResponseDTO;
 import com.interview.monitor.adapters.inbound.rest.dto.CityStatsResponseDTO;
 import com.interview.monitor.domain.model.Measurement;
 import org.junit.jupiter.api.BeforeEach;
@@ -178,7 +179,7 @@ class DuckDbMeasurementRepositoryIT {
     }
 
     @Test
-    void generateMonthlyHighestPM10Report_shouldGenerateEmptyFile_whenDataForLastMonth(@TempDir Path tempDir) {
+    void generateMonthlyHighestPM10Report_shouldGenerateEmptyFile_whenNoDataForLastMonth(@TempDir Path tempDir) {
         // given
         Path report = tempDir.resolve("temp_file.csv");
 
@@ -228,6 +229,45 @@ class DuckDbMeasurementRepositoryIT {
                         expectedLines.stream().sorted(),
                         Files.readAllLines(report).stream().sorted())
         );
+    }
+
+    @Test
+    void queryWorstNo2CitiesYearToYear_shouldReturnEmptyList_whenNoRisingNo2YearToYear() {
+        // given
+        var measurements = new ArrayList<Measurement>();
+        measurements.addAll(generateTestMeasurements(SIEDLCE_CITY_ID, new BigDecimal("23.1"), new BigDecimal("7.0"), new BigDecimal("0.34"), 13));
+        measurements.addAll(generateTestMeasurements(RADOM_CITY_ID, new BigDecimal("13.1"), new BigDecimal("12.4"), new BigDecimal("0.19"), 13));
+        measurements.addAll(generateTestMeasurements(PLOCK_CITY_ID, new BigDecimal("33.1"), new BigDecimal("22.4"), new BigDecimal("4.39"), 13));
+        measurements.addAll(generateTestMeasurements(WARSZAWA_CITY_ID, new BigDecimal("23.1"), new BigDecimal("12.4"), new BigDecimal("0.39"), 13));
+
+        underTest.saveAll(measurements);
+
+        // when
+        List<CityNo2YearToYearResponseDTO> actual = underTest.queryWorstNo2CitiesYearToYear();
+
+        // then
+        assertThat(actual).isEmpty();
+    }
+
+    @Test
+    void queryWorstNo2CitiesYearToYear_shouldReturnExpected() {
+        // given
+        var measurements = new ArrayList<Measurement>();
+        measurements.addAll(generateTestMeasurements(SIEDLCE_CITY_ID, new BigDecimal("23.1"), new BigDecimal("7.0"), new BigDecimal("0.34"), 13));
+        measurements.addAll(generateTestMeasurements(RADOM_CITY_ID, new BigDecimal("13.1"), new BigDecimal("12.4"), new BigDecimal("0.19"), 13));
+        // rising each month
+        measurements.addAll(generateTestMeasurements(PLOCK_CITY_ID, new BigDecimal("33.1"), new BigDecimal("22.4"), new BigDecimal("4.39"), 13, true));
+        measurements.addAll(generateTestMeasurements(WARSZAWA_CITY_ID, new BigDecimal("23.1"), new BigDecimal("12.4"), new BigDecimal("0.39"), 13, true));
+
+        underTest.saveAll(measurements);
+
+        // when
+        List<CityNo2YearToYearResponseDTO> actual = underTest.queryWorstNo2CitiesYearToYear();
+
+        // then
+        assertThat(actual).containsExactlyInAnyOrder(
+                new CityNo2YearToYearResponseDTO("Płock", PLOCK_CITY_ID, "Poland", new BigDecimal("366.89"), new BigDecimal("10.89")),
+                new CityNo2YearToYearResponseDTO("Warszawa", WARSZAWA_CITY_ID, "Poland", new BigDecimal("362.89"), new BigDecimal("6.89")));
     }
 
 

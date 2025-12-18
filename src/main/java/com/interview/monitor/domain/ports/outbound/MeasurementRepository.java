@@ -1,5 +1,6 @@
 package com.interview.monitor.domain.ports.outbound;
 
+import com.interview.monitor.adapters.inbound.rest.dto.CityNo2YearToYearResponseDTO;
 import com.interview.monitor.adapters.inbound.rest.dto.CityStatsResponseDTO;
 import com.interview.monitor.domain.model.Measurement;
 
@@ -19,4 +20,6 @@ public interface MeasurementRepository {
     Optional<CityStatsResponseDTO> queryCityStatsLastHour(UUID cityId);
 
     void generateMonthlyHighestPM10Report(String filename);
+
+    List<CityNo2YearToYearResponseDTO> queryWorstNo2CitiesYearToYear();
 }

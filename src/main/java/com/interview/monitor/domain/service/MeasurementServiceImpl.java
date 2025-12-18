@@ -1,6 +1,7 @@
 package com.interview.monitor.domain.service;
 
 
+import com.interview.monitor.adapters.inbound.rest.dto.CityNo2YearToYearResponseDTO;
 import com.interview.monitor.adapters.inbound.rest.dto.CityStatsResponseDTO;
 import com.interview.monitor.adapters.inbound.rest.dto.RisingCityStatsResponseDTO;
 import com.interview.monitor.domain.model.Measurement;
@@ -52,5 +53,10 @@ public class MeasurementServiceImpl implements MeasurementService {
     public void generateMonthlyHighestPM10Report() {
         String fileName = FILE_PREFIX + LocalDate.now().minusMonths(1).format(FILE_NAME_FORMATTER) + ".csv";
         measurementRepository.generateMonthlyHighestPM10Report(reportLocation + fileName);
+    }
+
+    @Override
+    public List<CityNo2YearToYearResponseDTO> getWorstNo2CitiesYearToYear() {
+        return measurementRepository.queryWorstNo2CitiesYearToYear();
     }
 }

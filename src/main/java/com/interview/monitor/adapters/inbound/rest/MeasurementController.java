@@ -4,6 +4,7 @@ package com.interview.monitor.adapters.inbound.rest;
 import com.interview.monitor.adapters.inbound.rest.dto.CityStatsResponseDTO;
 import com.interview.monitor.adapters.inbound.rest.dto.MeasurementRequestDTO;
 import com.interview.monitor.adapters.inbound.rest.dto.RisingCityStatsResponseDTO;
+import com.interview.monitor.adapters.inbound.rest.dto.CityNo2YearToYearResponseDTO;
 import com.interview.monitor.domain.exception.ValidationException;
 import com.interview.monitor.domain.model.Measurement;
 import com.interview.monitor.domain.ports.inbound.MeasurementService;
@@ -15,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -51,5 +53,11 @@ public class MeasurementController {
         return measurementService.calculateCityStatsLastHour(cityId)
                 .map(response -> ResponseEntity.ok().body(response))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/report/worst-cities-no2-y2y")
+    public ResponseEntity<List<CityNo2YearToYearResponseDTO>> getWorstNo2CitiesYearToYear() {
+        List<CityNo2YearToYearResponseDTO> response = measurementService.getWorstNo2CitiesYearToYear();
+        return ResponseEntity.ok(response);
     }
 }

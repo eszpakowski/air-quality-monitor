@@ -1,5 +1,6 @@
 package com.interview.monitor.adapters.inbound.rest;
 
+import com.interview.monitor.adapters.inbound.rest.dto.CityNo2YearToYearResponseDTO;
 import com.interview.monitor.adapters.inbound.rest.dto.CityStatsResponseDTO;
 import com.interview.monitor.adapters.inbound.rest.dto.MeasurementRequestDTO;
 import com.interview.monitor.domain.model.Measurement;
@@ -13,9 +14,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.interview.monitor.testutils.TestConstants.PLOCK_CITY_ID;
+import static com.interview.monitor.testutils.TestConstants.WARSZAWA_CITY_ID;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -29,6 +33,7 @@ class MeasurementControllerTest {
     private static final String SAVE_MEASURE = API + "/save-measure";
     private static final String GET_RISING_CITY_STATS = API + "/5M/{regionId}";
     private static final String GET_CITY_STATS_LAST_HOUR = API + "/1H/city/{cityId}";
+    private static final String GET_WORST_NO2_CITIES_YEAR2YEAR = API + "/report/worst-cities-no2-y2y";
     private static final String CONTENT_TYPE = "Content-type";
 
     private static final String SENSOR_ID = UUID.randomUUID().toString();
@@ -162,6 +167,22 @@ class MeasurementControllerTest {
                 .andExpect(status().is2xxSuccessful());
 
         verify(measurementService).calculateCityStatsLastHour(cityId);
+    }
+
+    @Test
+    void getWorstNo2CitiesYearToYear_shouldProcessValidRequest() throws Exception {
+        // given
+        var citiesNo2 = List.of(
+                new CityNo2YearToYearResponseDTO("Płock", PLOCK_CITY_ID, "Poland", new BigDecimal("366.89"), new BigDecimal("10.89")),
+                new CityNo2YearToYearResponseDTO("Warszawa", WARSZAWA_CITY_ID, "Poland", new BigDecimal("362.89"), new BigDecimal("6.89"))
+        );
+        given(measurementService.getWorstNo2CitiesYearToYear()).willReturn(citiesNo2);
+
+        //when & then
+        mockMvc.perform(get(GET_WORST_NO2_CITIES_YEAR2YEAR))
+                .andExpect(status().is2xxSuccessful());
+
+        verify(measurementService).getWorstNo2CitiesYearToYear();
     }
 
 }
