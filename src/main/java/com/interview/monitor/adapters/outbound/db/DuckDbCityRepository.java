@@ -12,18 +12,10 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
+import static com.interview.monitor.adapters.outbound.db.SqlQueries.UPSERT_CITY_SQL;
+
 @Repository
 public class DuckDbCityRepository implements CityRepository {
-    private static final String UPSERT_CITY_SQL = """
-            INSERT INTO cities (id, name, country, region, region_id)
-            VALUES (?, ?, ?, ?, ?)
-            ON CONFLICT (id) DO
-            UPDATE SET
-                name = EXCLUDED.name,
-                country = EXCLUDED.country,
-                region = EXCLUDED.region
-            """;
-
     private final String datasourceUrl;
 
     public DuckDbCityRepository(@Value("${spring.datasource.url}") String datasourceUrl) {

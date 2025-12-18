@@ -6,6 +6,16 @@ public final class SqlQueries {
             VALUES (nextval('measurements_seq'), ?, ?, ?, ?, ?, ?)
             """;
 
+    public static final String UPSERT_CITY_SQL = """
+            INSERT INTO cities (id, name, country, region, region_id)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT (id) DO
+            UPDATE SET
+                name = EXCLUDED.name,
+                country = EXCLUDED.country,
+                region = EXCLUDED.region
+            """;
+
     /**
      * List all cities from the last 5 months when there was a constant upward trend for one of the air quality values,
      * meaning for 5 consecutive months the value of that column was rising for that specific city.
