@@ -21,13 +21,21 @@ public class SchedulerConfig {
 
     @Scheduled(cron = ONCE_A_DAY_AT_MIDNIGHT)
     void refreshCityInformation() {
-        log.info("Attempting to refresh sensor information for each of the cities");
-        cityService.refreshCityInformation();
+        try {
+            log.info("Attempting to refresh sensor information for each of the cities");
+            cityService.refreshCityInformation();
+        } catch (Exception ex) {
+            log.error("Problems occurred when refreshing sensor information", ex);
+        }
     }
 
     @Scheduled(cron = ONCE_A_MONTH_AT_MIDNIGHT_OF_THE_FIRST_DAY_OF_THE_MONTH)
     void generateMonthlyHighestPM10Report() {
-        log.info("Attempting to generate monthly PM10 report");
-        measurementService.generateMonthlyHighestPM10Report();
+        try {
+            log.info("Attempting to generate monthly PM10 report");
+            measurementService.generateMonthlyHighestPM10Report();
+        } catch (Exception ex) {
+            log.error("Problems occurred when generate monthly PM10 report", ex);
+        }
     }
 }
