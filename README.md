@@ -1,5 +1,6 @@
 # Air Quality Monitor
-Spring Boot application for monitoring air quality across European cities. 
+Spring Boot application for monitoring air quality across European cities. Showcases the benefits of using an embedded 
+OLAP database when implementing various analytical workloads.
 
 ## Main technologies
 - [JDK 21](https://www.oracle.com/pl/java/technologies/downloads/)
@@ -78,7 +79,6 @@ Response:
 ```
 
 ## Scheduled Tasks
-### Monthly PM10 Report
 1. List of cities is being fetched each day at midnight from a designated endpoint.
 - Endpoint is configurable via property `integrations.city-information.base-url`
 2. On the first day of each month at midnight, the application generates a CSV report:
@@ -88,14 +88,14 @@ Response:
 
 ## Discussion/comment
 - All the heavy lifting is delegated to the OLAP database engine, which seems tailored for this exact class of problems.
-- I needed to use classic JDBC and java.sql.PreparedStatements because that's what suggested by DuckDB docs. It's 
-  possible to use some wrapper over JDBC like JdbcTemplate, but then you loose access to low level APIs like [Appender](https://duckdb.org/docs/stable/data/appender).
+- I needed to use classic JDBC and java.sql.PreparedStatements because that's what is suggested by DuckDB docs. It's 
+  possible to use some wrapper over JDBC like JdbcTemplate, but then you lose access to low level APIs like [Appender](https://duckdb.org/docs/stable/data/appender).
 - Integration tests need to be run via 'mvn verify' since Flyway doesn't seem to work with DuckDb when ran 
   programmatically. I think the reason is it doesn't care about connection limit, while DuckDB is very strict about it.
 
 TODO:
 - Swagger documentation.
-- Gatling load tests with expected amount of data.
+- Gatling load tests with the expected amount of data.
 - More corner cases covered by tests, especially regarding complex SQL queries.
-- Think how to improve the suggested endpoint design to get closer to [Richardson Maturity Model](https://martinfowler.com/articles/richardsonMaturityModel.html)
+- Think how to improve the suggested endpoint design to get closer to [Richardson Maturity Model](https://martinfowler.com/articles/richardsonMaturityModel.html).
 - Try alternative wrappers for JDBC, decide if it makes sense to use them with DuckDB.
