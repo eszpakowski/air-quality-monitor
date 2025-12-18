@@ -45,7 +45,7 @@ public class DuckDbCityRepository implements CityRepository {
 
             stmt.executeBatch();
         } catch (SQLException ex) {
-            throw new DatastoreException("Problems occurred when acquiring connection", ex);
+            throw new DatastoreException("Problems occurred when  accessing database", ex);
         }
     }
 }

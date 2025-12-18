@@ -15,13 +15,16 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MeasurementController.class)
 class MeasurementControllerTest {
-    private static final String SAVE_MEASURE = "/api/save-measure";
+    private static final String API = "/api";
+    private static final String SAVE_MEASURE = API + "/save-measure";
+    private static final String GET_RISING_CITY_STATS = API + "/5M/{regionId}";
     private static final String CONTENT_TYPE = "Content-type";
 
     private static final String SENSOR_ID = UUID.randomUUID().toString();
@@ -41,7 +44,7 @@ class MeasurementControllerTest {
     ObjectMapper objectMapper;
 
     @Test
-    void shouldReturnClientError_whenIncorrectContentType() throws Exception {
+    void postMeasurement_shouldReturnClientError_whenIncorrectContentType() throws Exception {
         // given
         var request = new MeasurementRequestDTO(SENSOR_ID, CITY_ID, PM_10, CO, NO_2, TIMESTAMP);
 
@@ -54,7 +57,7 @@ class MeasurementControllerTest {
     }
 
     @Test
-    void shouldReturnClientError_whenMissingRequiredFields() throws Exception {
+    void postMeasurement_shouldReturnClientError_whenMissingRequiredFields() throws Exception {
         // given
         var request = new MeasurementRequestDTO(null, CITY_ID, PM_10, CO, NO_2, TIMESTAMP);
 
@@ -68,7 +71,7 @@ class MeasurementControllerTest {
     }
 
     @Test
-    void shouldReturnClientError_whenInvalidRequestFormat() throws Exception {
+    void postMeasurement_shouldReturnClientError_whenInvalidRequestFormat() throws Exception {
         // given
         var request = new MeasurementRequestDTO("null", CITY_ID, PM_10, CO, NO_2, TIMESTAMP);
 
@@ -82,7 +85,7 @@ class MeasurementControllerTest {
     }
 
     @Test
-    void shouldProcessValidRequest() throws Exception {
+    void postMeasurement_shouldProcessValidRequest() throws Exception {
         // given
         var request = new MeasurementRequestDTO(SENSOR_ID, CITY_ID, PM_10, CO, NO_2, TIMESTAMP);
 
@@ -93,6 +96,30 @@ class MeasurementControllerTest {
                 .andExpect(status().is2xxSuccessful());
 
         verify(measurementService).save(Measurement.fromRequest(request));
+    }
+
+    @Test
+    void getRisingCityStats_shouldReturnClientError_whenIncorrectRegionId() throws Exception {
+        //when & then
+        mockMvc.perform(get(GET_RISING_CITY_STATS, "null")
+                        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().string("{\"status\":400," +
+                                            "\"message\":\"Method parameter 'regionId': Failed to convert value of type " +
+                                            "'java.lang.String' to required type 'java.util.UUID'; Invalid UUID string: null\"}"));
+    }
+
+    @Test
+    void getRisingCityStats_shouldProcessValidRequest() throws Exception {
+        // given
+        var regionId = UUID.randomUUID();
+
+        //when & then
+        mockMvc.perform(get(GET_RISING_CITY_STATS, regionId.toString())
+                        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful());
+
+        verify(measurementService).calculateRisingCityStats(regionId);
     }
 
 }

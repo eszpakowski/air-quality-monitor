@@ -1,6 +1,8 @@
 package com.interview.monitor.config;
 
 import com.interview.monitor.adapters.inbound.rest.dto.ResponseDTO;
+import com.interview.monitor.domain.exception.DatastoreException;
+import com.interview.monitor.domain.exception.IntegrationException;
 import com.interview.monitor.domain.exception.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -15,12 +17,13 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.*;
 
 @Slf4j
 @ControllerAdvice
@@ -67,6 +70,15 @@ public class GlobalExceptionHandler {
                 .body(responseBody(BAD_REQUEST, ex.getMessage()));
     }
 
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ResponseDTO> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        log.warn("MethodArgumentTypeMismatchException thrown:", ex);
+        return ResponseEntity
+                .status(BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(responseBody(BAD_REQUEST, ex.getMessage()));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ResponseDTO> handleIllegalArgumentException(IllegalArgumentException ex) {
         log.warn("IllegalArgumentException thrown:", ex);
@@ -76,14 +88,33 @@ public class GlobalExceptionHandler {
                 .body(responseBody(BAD_REQUEST, ex.getMessage()));
     }
 
+    //Custom 5xx Exceptions
+    @ExceptionHandler(IntegrationException.class)
+    public ResponseEntity<ResponseDTO> handleIntegrationException(IntegrationException ex) {
+        log.warn("IntegrationException thrown:", ex);
+        return ResponseEntity
+                .status(SERVICE_UNAVAILABLE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(responseBody(SERVICE_UNAVAILABLE, ex.getMessage()));
+    }
+
+    @ExceptionHandler(DatastoreException.class)
+    public ResponseEntity<ResponseDTO> handleDatastoreException(DatastoreException ex) {
+        log.warn("DatastoreException thrown:", ex);
+        return ResponseEntity
+                .status(SERVICE_UNAVAILABLE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(responseBody(SERVICE_UNAVAILABLE, ex.getMessage()));
+    }
+
     // Unhandled cases
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResponseDTO> handleOtherExceptions(Exception ex) {
         log.error("Exception thrown:", ex);
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .status(INTERNAL_SERVER_ERROR)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(responseBody(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage()));
+                .body(responseBody(INTERNAL_SERVER_ERROR, ex.getMessage()));
     }
 
     private static String constructValidationExceptionMsg(MethodArgumentNotValidException ex) {
