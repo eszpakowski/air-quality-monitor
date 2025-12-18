@@ -7,7 +7,9 @@ public final class SqlQueries {
             """;
 
     /**
-     *
+     * List all cities from the last 5 months when there was a constant upward trend for one of the air quality values,
+     * meaning for 5 consecutive months the value of that column was rising for that specific city.
+     * Specific column name should be interpolated into the query below (used as avg_val).
      */
     public static final String RISING_REGION_AVG_5MONTH_SQL = """
             WITH monthly_co_avg AS (
@@ -37,7 +39,7 @@ public final class SqlQueries {
             """;
 
     /**
-     *
+     * List air quality statistics from the last hour for the chosen city.
      */
     public static final String CITY_STATS_LAST_HOUR_SQL = """
             SELECT
@@ -56,7 +58,8 @@ public final class SqlQueries {
             """;
 
     /**
-     *
+     * Generate CSV report with 10 cities with the highest average monthly PM10 stats for the previous month.
+     * Specific file name and location of the report should be interpolated into the query below.
      */
     public static final String GENERATE_MONTHLY_HIGHEST_PM10_REPORT_SQL = """
             COPY (
