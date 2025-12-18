@@ -1,5 +1,6 @@
 package com.interview.monitor.adapters.inbound.rest;
 
+import com.interview.monitor.adapters.inbound.rest.dto.CityStatsResponseDTO;
 import com.interview.monitor.adapters.inbound.rest.dto.MeasurementRequestDTO;
 import com.interview.monitor.domain.model.Measurement;
 import com.interview.monitor.domain.ports.inbound.MeasurementService;
@@ -12,8 +13,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.UUID;
 
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -25,6 +28,7 @@ class MeasurementControllerTest {
     private static final String API = "/api";
     private static final String SAVE_MEASURE = API + "/save-measure";
     private static final String GET_RISING_CITY_STATS = API + "/5M/{regionId}";
+    private static final String GET_CITY_STATS_LAST_HOUR = API + "/1H/city/{cityId}";
     private static final String CONTENT_TYPE = "Content-type";
 
     private static final String SENSOR_ID = UUID.randomUUID().toString();
@@ -101,12 +105,11 @@ class MeasurementControllerTest {
     @Test
     void getRisingCityStats_shouldReturnClientError_whenIncorrectRegionId() throws Exception {
         //when & then
-        mockMvc.perform(get(GET_RISING_CITY_STATS, "null")
-                        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON))
+        mockMvc.perform(get(GET_RISING_CITY_STATS, "null"))
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().string("{\"status\":400," +
-                                            "\"message\":\"Method parameter 'regionId': Failed to convert value of type " +
-                                            "'java.lang.String' to required type 'java.util.UUID'; Invalid UUID string: null\"}"));
+                                            "\"message\":\"Method parameter 'regionId': Failed to convert value of type 'java.lang.String' " +
+                                            "to required type 'java.util.UUID'; Invalid UUID string: null\"}"));
     }
 
     @Test
@@ -115,11 +118,50 @@ class MeasurementControllerTest {
         var regionId = UUID.randomUUID();
 
         //when & then
-        mockMvc.perform(get(GET_RISING_CITY_STATS, regionId.toString())
-                        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON))
+        mockMvc.perform(get(GET_RISING_CITY_STATS, regionId.toString()))
                 .andExpect(status().is2xxSuccessful());
 
         verify(measurementService).calculateRisingCityStats(regionId);
+    }
+
+    @Test
+    void getCityStatsLastHour_shouldReturnClientError_whenIncorrectCityId() throws Exception {
+        //when & then
+        mockMvc.perform(get(GET_CITY_STATS_LAST_HOUR, "null"))
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().string("{\"status\":400," +
+                                            "\"message\":\"Method parameter 'cityId': Failed to convert value of type 'java.lang.String' " +
+                                            "to required type 'java.util.UUID'; Invalid UUID string: null\"}"));
+    }
+
+    @Test
+    void getCityStatsLastHour_shouldReturnNotFound() throws Exception {
+        // given
+        var cityId = UUID.randomUUID();
+        given(measurementService.calculateCityStatsLastHour(cityId)).willReturn(Optional.empty());
+
+        //when & then
+        mockMvc.perform(get(GET_CITY_STATS_LAST_HOUR, cityId.toString()))
+                .andExpect(status().isNotFound());
+
+        verify(measurementService).calculateCityStatsLastHour(cityId);
+    }
+
+    @Test
+    void getCityStatsLastHour_shouldProcessValidRequest() throws Exception {
+        // given
+        var cityId = UUID.randomUUID();
+        var cityStats = new CityStatsResponseDTO(
+                new BigDecimal("53.33"), new BigDecimal("99.99"), new BigDecimal("10.00"),
+                new BigDecimal("53.33"), new BigDecimal("99.99"), new BigDecimal("10.00"),
+                new BigDecimal("53.33"), new BigDecimal("99.99"), new BigDecimal("10.00"));
+        given(measurementService.calculateCityStatsLastHour(cityId)).willReturn(Optional.of(cityStats));
+
+        //when & then
+        mockMvc.perform(get(GET_CITY_STATS_LAST_HOUR, cityId.toString()))
+                .andExpect(status().is2xxSuccessful());
+
+        verify(measurementService).calculateCityStatsLastHour(cityId);
     }
 
 }

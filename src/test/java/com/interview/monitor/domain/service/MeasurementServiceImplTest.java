@@ -1,8 +1,10 @@
 package com.interview.monitor.domain.service;
 
+import com.interview.monitor.adapters.inbound.rest.dto.CityStatsResponseDTO;
 import com.interview.monitor.adapters.inbound.rest.dto.RisingCityStatsResponseDTO;
 import com.interview.monitor.domain.model.Measurement;
 import com.interview.monitor.domain.ports.outbound.MeasurementRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,10 +14,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.interview.monitor.testutils.TestConstants.RADOM_CITY_ID;
 import static com.interview.monitor.testutils.TestConstants.WARSZAWA_CITY_ID;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
@@ -58,6 +62,23 @@ class MeasurementServiceImplTest {
 
         verify(measurementRepository).queryRisingCO5MCities(regionId);
         verify(measurementRepository).queryRisingPM105MCities(regionId);
+    }
+
+    @Test
+    void calculateCityStatsLastHour_shouldCallMeasurementRepository() {
+        // given
+        UUID cityId = UUID.randomUUID();
+        var cityStats = new CityStatsResponseDTO(
+                new BigDecimal("53.33"), new BigDecimal("99.99"), new BigDecimal("10.00"),
+                new BigDecimal("53.33"), new BigDecimal("99.99"), new BigDecimal("10.00"),
+                new BigDecimal("53.33"), new BigDecimal("99.99"), new BigDecimal("10.00"));
+        given(measurementRepository.queryCityStatsLastHour(cityId)).willReturn(Optional.of(cityStats));
+
+        // when
+        Optional<CityStatsResponseDTO> actual = underTest.calculateCityStatsLastHour(cityId);
+
+        // then
+        assertThat(actual).hasValue(cityStats);
     }
 
     private static Measurement createValidMeasurement() {

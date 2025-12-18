@@ -1,5 +1,6 @@
 package com.interview.monitor.adapters.outbound.db;
 
+import com.interview.monitor.adapters.inbound.rest.dto.CityStatsResponseDTO;
 import com.interview.monitor.domain.model.Measurement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,8 +14,10 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.interview.monitor.testutils.TestConstants.*;
@@ -74,6 +77,28 @@ class DuckDbMeasurementRepositoryIT {
     }
 
     @Test
+    void queryRisingCities_shouldReturnEmpty_whenUnexistingRegionIdIsUsed() {
+        // given
+        var measurements = new ArrayList<Measurement>();
+        measurements.addAll(generateTestMeasurements(SIEDLCE_CITY_ID, new BigDecimal("23.1"), new BigDecimal("7.0"), new BigDecimal("0.34"), 6));
+        measurements.addAll(generateTestMeasurements(RADOM_CITY_ID, new BigDecimal("13.1"), new BigDecimal("12.4"), new BigDecimal("0.19"), 6));
+        measurements.addAll(generateTestMeasurements(PLOCK_CITY_ID, new BigDecimal("33.1"), new BigDecimal("22.4"), new BigDecimal("4.39"), 6));
+        measurements.addAll(generateTestMeasurements(WARSZAWA_CITY_ID, new BigDecimal("23.1"), new BigDecimal("12.4"), new BigDecimal("0.39"), 6));
+
+        underTest.saveAll(measurements);
+
+        UUID unexistingRegionId = UUID.randomUUID();
+
+        // when
+        List<String> actual1 = underTest.queryRisingCO5MCities(unexistingRegionId);
+        List<String> actual2 = underTest.queryRisingCO5MCities(unexistingRegionId);
+
+        // then
+        assertThat(actual1).isEmpty();
+        assertThat(actual2).isEmpty();
+    }
+
+    @Test
     void queryRisingCities_shouldReturnEmpty_whenNoRisingTendenciesInMeasurements() {
         // given
         var measurements = new ArrayList<Measurement>();
@@ -112,6 +137,40 @@ class DuckDbMeasurementRepositoryIT {
         // then
         assertThat(actual1).contains("Warszawa");
         assertThat(actual2).contains("Warszawa");
+    }
+
+    @Test
+    void queryCityStatsLastHour_shouldNotReturnStatsWhenNoMeasurementPresentInTheLastHour() {
+        // given
+        var measurement1 = new Measurement(null, SENSOR_ID, WARSZAWA_CITY_ID, new BigDecimal("10.00"), new BigDecimal("10.00"), new BigDecimal("10.00"), Instant.now().minus(2, ChronoUnit.HOURS));
+        var measurement2 = new Measurement(null, SENSOR_ID, WARSZAWA_CITY_ID, new BigDecimal("50.00"), new BigDecimal("50.00"), new BigDecimal("50.00"), Instant.now().minus(2, ChronoUnit.HOURS));
+        var measurement3 = new Measurement(null, SENSOR_ID, WARSZAWA_CITY_ID, new BigDecimal("99.99"), new BigDecimal("99.99"), new BigDecimal("99.99"), Instant.now().minus(2, ChronoUnit.HOURS));
+        underTest.saveAll(List.of(measurement1, measurement2, measurement3));
+
+        // when
+        Optional<CityStatsResponseDTO> actual = underTest.queryCityStatsLastHour(WARSZAWA_CITY_ID);
+
+        // then
+        assertThat(actual).isEmpty();
+    }
+
+    @Test
+    void queryCityStatsLastHour_shouldReturnExpectedCityStats() {
+        // given
+        var measurement1 = new Measurement(null, SENSOR_ID, WARSZAWA_CITY_ID, new BigDecimal("10.00"), new BigDecimal("10.00"), new BigDecimal("10.00"), Instant.now());
+        var measurement2 = new Measurement(null, SENSOR_ID, WARSZAWA_CITY_ID, new BigDecimal("50.00"), new BigDecimal("50.00"), new BigDecimal("50.00"), Instant.now().plusSeconds(60));
+        var measurement3 = new Measurement(null, SENSOR_ID, WARSZAWA_CITY_ID, new BigDecimal("99.99"), new BigDecimal("99.99"), new BigDecimal("99.99"), Instant.now().plusSeconds(60));
+        underTest.saveAll(List.of(measurement1, measurement2, measurement3));
+
+        // when
+        Optional<CityStatsResponseDTO> actual = underTest.queryCityStatsLastHour(WARSZAWA_CITY_ID);
+
+        // then
+        var expected = new CityStatsResponseDTO(
+                new BigDecimal("53.33"), new BigDecimal("99.99"), new BigDecimal("10.00"),
+                new BigDecimal("53.33"), new BigDecimal("99.99"), new BigDecimal("10.00"),
+                new BigDecimal("53.33"), new BigDecimal("99.99"), new BigDecimal("10.00"));
+        assertThat(actual).hasValue(expected);
     }
 
 

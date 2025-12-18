@@ -1,6 +1,7 @@
 package com.interview.monitor.adapters.inbound.rest;
 
 
+import com.interview.monitor.adapters.inbound.rest.dto.CityStatsResponseDTO;
 import com.interview.monitor.adapters.inbound.rest.dto.MeasurementRequestDTO;
 import com.interview.monitor.adapters.inbound.rest.dto.RisingCityStatsResponseDTO;
 import com.interview.monitor.domain.exception.ValidationException;
@@ -43,5 +44,12 @@ public class MeasurementController {
     public ResponseEntity<RisingCityStatsResponseDTO> getRisingCityStats(@NotNull @PathVariable UUID regionId) {
         RisingCityStatsResponseDTO response = measurementService.calculateRisingCityStats(regionId);
         return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/1H/city/{cityId}")
+    public ResponseEntity<CityStatsResponseDTO> getCityStatsLastHour(@NotNull @PathVariable UUID cityId) {
+        return measurementService.calculateCityStatsLastHour(cityId)
+                .map(response -> ResponseEntity.ok().body(response))
+                .orElse(ResponseEntity.notFound().build());
     }
 }
