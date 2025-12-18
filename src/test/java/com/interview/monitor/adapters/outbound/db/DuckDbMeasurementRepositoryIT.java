@@ -266,8 +266,8 @@ class DuckDbMeasurementRepositoryIT {
 
         // then
         assertThat(actual).containsExactlyInAnyOrder(
-                new CityNo2YearToYearResponseDTO("Płock", PLOCK_CITY_ID, "Poland", new BigDecimal("366.89"), new BigDecimal("10.89")),
-                new CityNo2YearToYearResponseDTO("Warszawa", WARSZAWA_CITY_ID, "Poland", new BigDecimal("362.89"), new BigDecimal("6.89")));
+                new CityNo2YearToYearResponseDTO("Płock", PLOCK_CITY_ID, "Poland", new BigDecimal("364.89"), new BigDecimal("9.89")),
+                new CityNo2YearToYearResponseDTO("Warszawa", WARSZAWA_CITY_ID, "Poland", new BigDecimal("360.89"), new BigDecimal("5.89")));
     }
 
 

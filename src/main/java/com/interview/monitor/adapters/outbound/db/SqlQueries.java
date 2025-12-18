@@ -22,7 +22,7 @@ public final class SqlQueries {
      * Specific column name should be interpolated into the query below (used as avg_val).
      */
     public static final String RISING_REGION_AVG_5MONTH_SQL = """
-            WITH monthly_co_avg AS (
+            WITH monthly_avg AS (
                 SELECT
                     c.name,
                     m.city_id,
@@ -40,7 +40,7 @@ public final class SqlQueries {
                     name,
                     city_id,
                     avg_val > LAG(avg_val) OVER (PARTITION BY city_id ORDER BY month) AS is_rising
-                FROM monthly_co_avg
+                FROM monthly_avg
             )
             SELECT name
             FROM with_trend
